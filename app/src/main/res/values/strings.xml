@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Presensi Labti</string>
+
+    //splash screen
+    <string name="btn_get_started">Get Started</string>
+
+    //main user
+    <string name="header_text_hi">Hii</string>
+    <string name="text_btn_absen">Absen</string>
+    <string name="text_btn_report">Report</string>
+    <string name="text_btn_exit">Exit</string>
+
+    //cek location
+    <string name="scaning">Scanning...</string>
+    <string name="cek_location">Checking Your Location</string>
+
+    //absen
+    <string name="check_in">Check In</string>
+    <string name="check_out">Check Out</string>
+</resources>
