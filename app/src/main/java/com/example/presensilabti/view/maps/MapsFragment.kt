@@ -38,17 +38,6 @@ class MapsFragment : Fragment() {
     private val centerLng = 106.8412196
     private val geofenceRadius = 20.0
     private lateinit var nMap : GoogleMap
-    private lateinit var geofencingClient : GeofencingClient
-
-    private val geofencePendingIntent: PendingIntent by lazy {
-        val intent = Intent(requireContext(), GeofenceBroadcastReceiver::class.java)
-        intent.action = GeofenceBroadcastReceiver.ACTION_GEOFENCE_EVENT
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
-            PendingIntent.getBroadcast(requireContext(), 0, intent, PendingIntent.FLAG_MUTABLE)
-        } else{
-            PendingIntent.getBroadcast(requireContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        }
-    }
 
     private val callback = OnMapReadyCallback { googleMap ->
 
@@ -81,16 +70,13 @@ class MapsFragment : Fragment() {
         googleMap.uiSettings.isMapToolbarEnabled = true
 
         getMyLocation(googleMap)
-        addGeofence()
-
 
     }
 
-    private val requestBackgroundLocationPermissionLauncher =
+    val requestBackgroundLocationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()){
                 isGranted : Boolean ->
             if (isGranted){
-
                 getMyLocation(nMap)
             }
         }
@@ -98,7 +84,7 @@ class MapsFragment : Fragment() {
     private val runningQrLater = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
 
     @TargetApi(Build.VERSION_CODES.Q)
-    private val requestLocationPermissionLauncher =
+    val requestLocationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()){
                 isGranted : Boolean ->
             if (isGranted){
@@ -110,7 +96,7 @@ class MapsFragment : Fragment() {
             }
         }
 
-    private fun checkPermission(permission: String): Boolean {
+    fun checkPermission(permission: String): Boolean {
         return ContextCompat.checkSelfPermission(
             requireContext(),
             permission
@@ -118,7 +104,7 @@ class MapsFragment : Fragment() {
     }
 
     @TargetApi(Build.VERSION_CODES.Q)
-    private fun checkForegroundAndBackgroundLocationPermission(): Boolean {
+    fun checkForegroundAndBackgroundLocationPermission(): Boolean {
         val foregroundLocationAproved = checkPermission(Manifest.permission.ACCESS_FINE_LOCATION)
         val backgroundPermissionAproved =
             if (runningQrLater){
@@ -132,54 +118,13 @@ class MapsFragment : Fragment() {
 
 
     @SuppressLint("MissingPermission")
-    private fun getMyLocation(nMap: GoogleMap) {
+    fun getMyLocation(nMap: GoogleMap) {
         if (checkForegroundAndBackgroundLocationPermission()){
             nMap.isMyLocationEnabled = true
         } else {
             requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
     }
-
-    @SuppressLint("MissingPermission")
-    private fun addGeofence() {
-        geofencingClient = LocationServices.getGeofencingClient(requireContext())
-
-        val geofence = Geofence.Builder()
-            .setRequestId("labti")
-            .setCircularRegion(
-                centerLat,
-                centerLng,
-                geofenceRadius.toFloat()
-            )
-
-            .setExpirationDuration(Geofence.NEVER_EXPIRE)
-            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_DWELL)
-            .setLoiteringDelay(5000)
-            .build()
-
-        val geofencingRequest = GeofencingRequest.Builder()
-            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_DWELL)
-            .addGeofence(geofence)
-            .build()
-
-        geofencingClient.removeGeofences(geofencePendingIntent).run {
-            addOnCompleteListener {
-                geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent).run {
-                    addOnSuccessListener {
-                        showToast("Geofencing added")
-                    }
-                    addOnFailureListener {
-                        showToast("Geofencing not added : ${it.message}")
-                    }
-                }
-            }
-        }
-    }
-
-    private fun showToast(text : String) {
-        Toast.makeText(requireContext(), text, Toast.LENGTH_SHORT).show()
-    }
-
 
     override fun onCreateView(
         inflater: LayoutInflater,

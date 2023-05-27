@@ -1,40 +1,22 @@
 package com.example.presensilabti.view.absen
 
-import android.annotation.SuppressLint
-import android.app.PendingIntent
-import android.content.Intent
-import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.EdgeEffectCompat.getDistance
 import com.example.presensilabti.R
 import com.example.presensilabti.databinding.ActivityAbsenUserBinding
-import com.example.presensilabti.view.maps.GeofenceBroadcastReceiver
 import com.example.presensilabti.view.maps.MapsFragment
-import com.google.android.gms.location.Geofence
-import com.google.android.gms.location.GeofencingClient
-import com.google.android.gms.location.GeofencingRequest
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.GoogleMap
+import kotlin.math.*
 
 class AbsenUserActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAbsenUserBinding
+    private lateinit var googleMap: GoogleMap
 
-    private lateinit var geofencingClient : GeofencingClient
+    private lateinit var map: MapsFragment
 
-//    private val centerLat = -6.3538282
-//    private val centerLng = 106.8412196
-//    private val geofenceRadius = 20.0
-//
-//    private val geofencePendingIntent: PendingIntent by lazy {
-//        val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
-//        intent.action = GeofenceBroadcastReceiver.ACTION_GEOFENCE_EVENT
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
-//            PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE)
-//        } else{
-//            PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-//        }
-//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,7 +26,8 @@ class AbsenUserActivity : AppCompatActivity() {
         val mFragmentManager = supportFragmentManager
         val mMapsFragment = MapsFragment()
 
-        val geofence = GeofenceBroadcastReceiver()
+
+
 
         Log.d("FragmentMaps", "Fragment Name : " + MapsFragment::class.java.simpleName)
 
@@ -53,8 +36,20 @@ class AbsenUserActivity : AppCompatActivity() {
             .commit()
 
         binding.btnCheckIn.setOnClickListener {
-            mMapsFragment
-            Toast.makeText(this, "bang udah bang", Toast.LENGTH_SHORT).show()
+            val getLocation = GetLocation(applicationContext)
+            val location = getLocation.getLocation()
+            if (location != null) {
+                val latitudeSaya = location.latitude
+                val longitudeSaya = location.longitude
+
+                val jarak = isDistance(latitudeSaya, longitudeSaya)
+               if (jarak < 20.0){
+                   Toast.makeText(this, "Absen Berhasil", Toast.LENGTH_SHORT).show()
+               } else{
+                   Toast.makeText(this, "kamu belum dalam jangkauan", Toast.LENGTH_SHORT).show()
+               }
+            }
+
         }
 
         setupView()
@@ -66,43 +61,26 @@ class AbsenUserActivity : AppCompatActivity() {
         supportActionBar?.hide()
     }
 
-//    @SuppressLint("MissingPermission")
-//    private fun addGeofence() {
-//        geofencingClient = LocationServices.getGeofencingClient(this)
-//
-//        val geofence = Geofence.Builder()
-//            .setRequestId("labti")
-//            .setCircularRegion(
-//                centerLat,
-//                centerLng,
-//                geofenceRadius.toFloat()
-//            )
-//
-//            .setExpirationDuration(Geofence.NEVER_EXPIRE)
-//            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_DWELL)
-//            .setLoiteringDelay(5000)
-//            .build()
-//
-//        val geofencingRequest = GeofencingRequest.Builder()
-//            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_DWELL)
-//            .addGeofence(geofence)
-//            .build()
-//
-//        geofencingClient.removeGeofences(geofencePendingIntent).run {
-//            addOnCompleteListener {
-//                geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent).run {
-//                    addOnSuccessListener {
-//                        showToast("Geofencing added")
-//                    }
-//                    addOnFailureListener {
-//                        showToast("Geofencing not added : ${it.message}")
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    private fun showToast(text : String) {
-//        Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
-//    }
+    private fun isDistance(latitudeUser: Double, longitudeUser: Double) : Double{
+
+        //variable
+        val pi = 3.14159265358979
+        val lat1 = -6.3538282
+        val lon1 = 106.8412196
+        val lat2 = latitudeUser
+        val lon2 = longitudeUser
+        val R = 6371e3
+
+        val latRad1 = lat1 * (pi / 180)
+        val latRad2 = lat2 * (pi / 180)
+        val deltaLatRad = (lat2 - lat1) * (pi / 180)
+        val deltaLonRad = (lon2 - lon1) * (pi / 180)
+
+        /* RUMUS HAVERSINE */
+        val a = sin(deltaLatRad / 2).pow(2) + cos(latRad1) * cos(latRad2) * sin(deltaLonRad / 2).pow(2)
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        val s = R * c // hasil jarak dalam meter
+        return s
+    }
+
 }
