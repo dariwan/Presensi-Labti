@@ -17,4 +17,16 @@
     //absen
     <string name="check_in">Check In</string>
     <string name="check_out">Check Out</string>
+
+    //login
+    <string name="login_text">Login</string>
+    <string name="btn_login">Login</string>
+    <string name="hint_npm">NPM</string>
+    <string name="hint_password">Password</string>
+    <string name="or">Or</string>
+    
+    //register
+    <string name="register_text">Register</string>
+    <string name="btn_register">Register</string>
+    <string name="hint_nama">Nama</string>
 </resources>

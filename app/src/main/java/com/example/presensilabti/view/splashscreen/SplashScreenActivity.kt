@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.presensilabti.databinding.ActivitySplashScreenBinding
+import com.example.presensilabti.view.login.LoginActivity
 import com.example.presensilabti.view.main.MainUserActivity
 
 class SplashScreenActivity : AppCompatActivity() {
@@ -15,13 +16,16 @@ class SplashScreenActivity : AppCompatActivity() {
 
         supportActionBar?.hide()
 
-        toActivity()
+        transition()
+
     }
 
-    private fun toActivity() {
+    private fun transition() {
         binding.btnSplashScreen.setOnClickListener {
-            val intent = Intent(this@SplashScreenActivity, MainUserActivity::class.java)
+            val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
         }
     }
+
+
 }
